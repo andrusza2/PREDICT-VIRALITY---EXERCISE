@@ -117,8 +117,9 @@ for i in xrange(1, 25):
 
 ### Ad. (10)
 ### Plot the mRSE values computed on the test dataset
-linear_line, = plt.plot(results_mRSE, label="Linear Regression")
-multiple_linear_line, = plt.plot(results_mRSE_2, label="Multiple-input Linear Regression")
+ax = plt.subplot()
+linear_line, = ax.plot(np.arange(1,25,1),results_mRSE, label="Linear Regression")
+multiple_linear_line, = ax.plot(np.arange(1,25,1), results_mRSE_2, label="Multiple-input Linear Regression")
 linear_legend = plt.legend(handles=[linear_line, multiple_linear_line])
 plt.xlabel("Reference time (n)")
 plt.ylabel("mRSE")
