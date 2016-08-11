@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.stats import kurtosis
 from sklearn.cross_validation import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
@@ -10,7 +11,10 @@ def print_basic_statistics(n, data):
     print " n = ", n
     v = data[n].values
     print "     Mean value = ", v.mean()
+    print "     Median value = ", np.median(v)
     print "     Standard deviation = ", v.std()
+    print "     Range = ", np.ptp(v)
+    print "     Kurtosis = ", kurtosis(v)
 
 
 def plot_distribution(vector, name):
@@ -54,31 +58,35 @@ def plot_mRSE_values(linear_results, multiple_linear_results):
     plt.show()
 
 
+def mean_relative_squared_error(acc, pred):
+    return np.mean((pred/acc - 1)**2)
+
+
 def train_linear_model_and_compute_mRSE(i, train, test):
 
-    ## Log transformed
-    X = np.log(train[i].values + 1).reshape(-1, 1)
-    X2 = np.log(train.loc[:, 1:i].values + 1)
-    Y = np.log(train[168].values + 1)
-
-    X_t = np.log(test[i].values + 1).reshape(-1, 1)
-    X_t2 = np.log(test.loc[:, 1:i].values + 1)
-    Y_t = np.log(test[168].values + 1)
-
-    # ## Raw views
-    # X = train[i].values.reshape(-1, 1)
-    # X2 = train.loc[:, 1:i].values
-    # Y = train[168].values
+    # ## Log transformed
+    # X = np.log(train[i].values + 1).reshape(-1, 1)
+    # X2 = np.log(train.loc[:, 1:i].values + 1)
+    # Y = np.log(train[168].values + 1)
     #
-    # X_t = test[i].values.reshape(-1, 1)
-    # X_t2 = test.loc[:, 1:i].values
-    # Y_t = test[168].values
+    # X_t = np.log(test[i].values + 1).reshape(-1, 1)
+    # X_t2 = np.log(test.loc[:, 1:i].values + 1)
+    # Y_t = np.log(test[168].values + 1)
+
+    ## Raw views
+    X = train[i].values.reshape(-1, 1)
+    X2 = train.loc[:, 1:i].values
+    Y = train[168].values
+
+    X_t = test[i].values.reshape(-1, 1)
+    X_t2 = test.loc[:, 1:i].values
+    Y_t = test[168].values
 
     linear_regressor.fit(X, Y)
-    single_mRSE = mean_squared_error(Y_t, linear_regressor.predict(X_t))
+    single_mRSE = mean_relative_squared_error(Y_t, linear_regressor.predict(X_t))
 
     linear_regressor.fit(X2, Y)
-    multiple_mRSE = mean_squared_error(Y_t, linear_regressor.predict(X_t2))
+    multiple_mRSE = mean_relative_squared_error(Y_t, linear_regressor.predict(X_t2))
 
     return single_mRSE, multiple_mRSE
 
@@ -127,7 +135,7 @@ if __name__ == "__main__":
 
     ### Ad. (6)
     ### Split dataset, 10% for testing
-    train, test = train_test_split(normalized_data, test_size=0.1, random_state=1)
+    train, test = train_test_split(normalized_data, test_size=0.1, random_state=3)
 
 
     ### Ad. (7), (8), (9)
@@ -143,6 +151,9 @@ if __name__ == "__main__":
         single_mRSE, multiple_mRSE = train_linear_model_and_compute_mRSE(i, train, test)
         results_mRSE.append(single_mRSE)
         results_mRSE_2.append(multiple_mRSE)
+
+    print results_mRSE
+    print results_mRSE_2
 
 
     ### Ad. (10)
